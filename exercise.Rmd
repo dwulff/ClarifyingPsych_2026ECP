@@ -1,0 +1,272 @@
+---
+title: "Clarifying personality psychology using large language models"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+*Note: This document is an automatically generated R version of the Python notebook `exercise.ipynb`. The text and analysis steps are identical; the code has been translated from Python to R.*
+
+In this analysis - inspired by [Wulff & Mata, 2025](https://doi.org/10.1038/s41562-024-02089-y) - we will use a language model to extract features from personality items. We will then use these features to compute the similarity between items, evaluate how well these predict observed similarities, and visualize the similarity matrix in two dimensions. Finally, we will re-assign each item to a personality construct based on its predicted similarity to the constructs.
+
+By the end of this analysis, you will have learned how:
+
+- To extract features from text using a pre-trained langauge model
+- To compute the similarity between items using cosine similarity
+- How this can be used to predict the construct to which an item belongs, and thus potentially improve construct validity
+
+## Environment Setup
+
+This notebook is meant to be run **locally** (see the [README](https://github.com/dwulff/ClarifyingPsych_2026SICSS) for setup instructions). Make sure the file is opened from within the workshop folder (so that the data files are found; in RStudio, the working directory is set to the file's folder automatically). The language model libraries `sentence-transformers` and `pacmap` have no native R implementation, so we access them from R via `reticulate`. If you have not installed them yet, uncomment and run the `py_install` line below (one-time setup).
+
+```{r}
+Sys.setenv(NUMBA_THREADING_LAYER = "workqueue")  # Avoids a threading conflict between R and pacmap
+
+library(reticulate)
+# py_install(c("sentence-transformers", "pacmap"))  # Run once if the Python packages are not yet installed
+```
+
+```{r}
+library(ggplot2)
+
+# Python libraries accessed via reticulate
+sentence_transformers <- import("sentence_transformers")
+pacmap <- import("pacmap")
+
+# R implementation of sklearn's cosine_similarity function
+cosine_similarity <- function(x, y = x) {
+  x <- as.matrix(x) / sqrt(rowSums(as.matrix(x)^2))
+  y <- as.matrix(y) / sqrt(rowSums(as.matrix(y)^2))
+  x %*% t(y)
+}
+```
+
+## Extracting Features from Personality Items
+
+We begin by loading the personality items into a `data.frame` with three columns:
+
+1. `factor`: The (high-level) personality factor to which the item belongs.
+2. `construct`: The (mid-level) personality construct to which the item belongs.
+3. `item`: The text of the personality item used to measure the construct.
+
+Run the chunk below.
+
+```{r}
+# Loading personality data
+personality <- read.csv('items.csv')
+head(personality)
+```
+
+The code below makes use of the `all-MiniLM-L6-v2` model to extract features from the personality items. It loads the model using the `sentence_transformers` library and extract a vector of features for each item with the `encode` method. It then converts the features to a `data.frame` for further analysis and for easy viewing.
+
+Run the chunk below.
+
+```{r}
+# Load pre-trained model
+model <- sentence_transformers$SentenceTransformer('all-MiniLM-L6-v2')
+
+# Extract features from personality items
+item_features <- model$encode(personality$item)
+
+# Convert features to data.frame
+item_features <- as.data.frame(item_features, row.names = personality$item)
+head(item_features)
+```
+
+## Computing Similarity between Personality Items
+
+Now that we have extracted features for each personality item, we can compute the similarity between items. We use the `cosine_similarity` function defined above (an R implementation of `sklearn`'s function of the same name), which measures the cosine of the angle between two vectors. The closer the cosine similarity is to 1, the more similar the two items are. We compute the similarity between all pairs of items and store the results in a similarity matrix.
+
+Run the chunk below.
+
+```{r}
+# Compute cosine similarity between features
+predicted_sims <- cosine_similarity(item_features)
+rownames(predicted_sims) <- colnames(predicted_sims) <- personality$item
+predicted_sims[1:5, 1:5]
+```
+
+As you can see, the similarity matrix is symmetric, with the diagonal containing 1s (since the similarity of an item with itself is 1). Furthermore, items that you would expect to be more related (e.g. "Turn plans into actions." and "Plunge into tasks with all my heart." are indeed more similar. Conversely, less related items (e.g. "Am calm in tense situations." and "Demand quality.") show lower cosine similarities.
+
+```{r}
+# Plotting the distribution of item similarities
+hist(predicted_sims[, 'Go straight for the goal.'], breaks = 10)
+```
+
+**Task 1**: The code above plots the distribution of cosine similarities for the first item. Try replacing `'Go straight for the goal.'` with other items to get a feel for the overall similarity distribution (hint: you can plan around with the `breaks` parameter to change the resolution of the histogram). What do you notice about the distributions?
+
+## Comparing to observed correlations between items
+
+This section compares how well the predicted similarities align with the *observed* similarities between items: that is, the correlations between the participant responses to the items. It first loads the observed correlations into a `data.frame`:
+
+```{r}
+# Load observed correlations
+observed_sims <- read.csv('item_corrs.csv')
+head(observed_sims)
+```
+
+Next, the code pivots `observed_sims` to create a correlation matrix with the same structure as `predicted_sims` so that they can be easily compared.
+
+```{r}
+# Pivoting to a correlation matrix for easy comparison with predicted correlations
+observed_sims <- xtabs(cor ~ text_i + text_j, data = observed_sims)
+observed_sims <- as.matrix(unclass(observed_sims))
+observed_sims[1:5, 1:5]
+```
+
+The predicted and observed similarities are then aligned to ensure that the items are in the same order. The code then flattens the lower triangle of the matrices into vectors to compute the correlation between the predicted and observed similarities.
+
+```{r}
+# Aligning observed and predicted similarities
+common_items <- intersect(rownames(predicted_sims), rownames(observed_sims))
+predicted_sims <- predicted_sims[common_items, common_items]
+observed_sims <- observed_sims[common_items, common_items]
+
+# Takes the lower triangle of a matrix and flattens it into a vector
+lower_triangle_flat <- function(m) {
+  m[upper.tri(m)]  # excludes the diagonal (self-similarities)
+}
+
+# Flatten the lower triangle of the observed and predicted similarities into vectors
+predicted_sims_flat <- lower_triangle_flat(predicted_sims)
+observed_sims_flat <- lower_triangle_flat(observed_sims)
+
+# Correlation between predicted and observed
+cat(sprintf('r: %.2f\n', cor(predicted_sims_flat, observed_sims_flat)))
+cat(sprintf('r of absolute values: %.2f\n', cor(abs(predicted_sims_flat), abs(observed_sims_flat))))
+```
+
+The correlation between the predicted and observed similarities is 0.18. If we take the absolute values of the similarities, the correlation increases to 0.33. Since we are not interested in which way round (in terms of polarity) the personality item scale was rated, we focus on the absolute values. This suggests that the extracted features capture some of the variance in the observed similarities between items. Whilst this suggests that the extracted features may not be capturing everything we want to know about the items, alternative explanations exist. Can you think of any?
+
+## Visualizing the Item Similarities
+
+We can also visualize `predicted_sims` in two dimensions using PaCMAP. PaCMAP is a dimensionality reduction technique that preserves the pairwise distances between points. The code fits the PaCMAP model to the extracted features and transform them into two dimensions, saving the results in a `data.frame`.
+
+```{r}
+# Initialize PaCMAP model
+pac <- pacmap$PaCMAP(n_components = 2L, random_state = 42L)
+
+# Fit and transform the features
+pac_features <- pac$fit_transform(as.matrix(item_features))
+
+# Convert features to data.frame
+pac_features <- as.data.frame(pac_features)
+colnames(pac_features) <- c('x', 'y')
+head(pac_features)
+```
+
+Next, the code adds the personality factors and items as columns to `pac_features` to see how items cluster based on their similarity.
+
+```{r}
+# Adding personality factors to pac features
+pac_features$factor <- personality$factor
+pac_features$item <- personality$item
+head(pac_features)
+```
+
+The code next plots the PaCMAP, with each point representing a personality item. The points are colored by factor, allowing us to see how items cluster based on their similarity.
+
+```{r}
+# Plot pac features
+ggplot(pac_features, aes(x = x, y = y, color = factor)) +
+  geom_point(size = 3) +
+  theme_classic()
+```
+
+As illustrated, the items somewhat cluster according to their factor, again suggesting that the extracted features have captured some meaningful information about the items.
+
+## Reassigning Items to Constructs
+
+Finally, we can ask how well the extracted features predict the constructs to which the items belong. We first extract the features for each construct.
+
+```{r}
+# Extracting construct features
+constructs <- unique(personality$construct)
+
+# Extracting features for constructs
+construct_features <- model$encode(constructs)
+
+# Convert features to data.frame
+construct_features <- as.data.frame(construct_features, row.names = constructs)
+head(construct_features)
+```
+
+The code next computes the cosine similarity between the construct features and the item features.
+
+```{r}
+# Computing cosine similarity between constructs and items
+construct_sims <- cosine_similarity(construct_features, item_features)
+rownames(construct_sims) <- constructs
+colnames(construct_sims) <- personality$item
+construct_sims[1:5, 1:3]
+```
+
+We then find the closest construct to each item by finding the construct with the highest similarity. We add this as a new column, `closest_construct`, to the `personality` dataframe.
+
+```{r}
+# Finding the closest construct to each item
+closest_construct <- rownames(construct_sims)[apply(construct_sims, 2, which.max)]
+names(closest_construct) <- colnames(construct_sims)
+head(closest_construct)
+```
+
+```{r}
+# Adding the closest constructs to original personality dataframe
+personality$predicted_construct <- closest_construct[personality$item]
+head(personality)
+```
+
+```{r}
+# Evaluating how well the predicted constructs align with the actual constructs
+accuracy <- mean(personality$construct == personality$predicted_construct)
+cat(sprintf('Accuracy: %.2f\n', accuracy))
+```
+
+Predicting the constructs based on the similarity between the item and construct features results in an accuracy of 23%. Whilst this is an improvement on the 3.33% accuracy that would be expected at random, it is still relatively low. This could suggest that the extracted features do not fully capture the differences between the constructs, or (perhaps more interestingly) that the constructs are not as distinct as we might expect.
+
+You can also visualize the confusion matrix to see how well the items were assigned to the constructs. We firstly compute the confusion matrix using `table` and then sort it by the personality factor to make it easier to interpret.
+
+```{r}
+# Confusion matrix
+confusion_matrix <- as.data.frame.matrix(table(personality$construct, personality$predicted_construct))
+
+# Adding missing predicted constructs
+missing_constructs <- setdiff(personality$construct, personality$predicted_construct)
+confusion_matrix[missing_constructs] <- 0
+
+# Sorting confusion matrix by personality factor
+ordered_constructs <- unique(personality$construct[order(personality$factor)])
+confusion_matrix <- confusion_matrix[ordered_constructs, ordered_constructs]
+confusion_matrix[1:5, 1:5]
+```
+
+When interpreting the confusion matrix, it is important to remember that the rows represent the actual constructs, while the columns represent the predicted constructs. The values in the cells represent the number of items assigned to each construct. The diagonal reflects the number of items correctly assigned to their construct, while off-diagonal values reflect items that were misclassified. Finally, the maximum number of items that could be correctly assigned to a construct is 10, which is why the heatmap is capped at this value.
+
+```{r, fig.width=16, fig.height=12}
+# Plotting confusion matrix without numbers in cells
+n_items_per_construct <- 10 # Maximum possible number of correctly assigned items per construct
+confusion_long <- as.data.frame(as.table(as.matrix(confusion_matrix)))
+colnames(confusion_long) <- c('construct', 'predicted_construct', 'n')
+ggplot(confusion_long, aes(x = predicted_construct, y = construct, fill = pmin(n, n_items_per_construct))) +
+  geom_tile() +
+  scale_fill_gradient(low = 'white', high = '#08306b', limits = c(0, n_items_per_construct), name = NULL) +
+  scale_y_discrete(limits = rev(ordered_constructs)) +
+
+  # Increasing x-tick label and y-tick label font size
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 12),
+        axis.text.y = element_text(size = 12))
+```
+
+As illustrated, while some constructs are well predicted (e.g., "Emotionality" and "Imagination"), most are less well predicted.
+
+**TASK 2**: Now rerun the entire notebook but with `model <- sentence_transformers$SentenceTransformer('dwulff/mpnet-personality')` (you can find the right line via a `cmd + f` search). This is a model that has been fine-tuned on pairs of personality items to accurately predict the observed correlations between items. Although performance should be considerably better, it is important to be aware that this model has been fine-tuned on the same data that we are using to evaluate it, which gives it an unfair advantage.
+
+## Applying the Approach to Other Surveys
+
+**TASK 3**: You now have all the tools to carry out this kind of analysis yourself. The workshop folder contains a second data set, `ipip_items.csv`, covering the full [International Personality Item Pool (IPIP)](https://ipip.ori.org/): 3,805 item–scale assignments from 36 personality inventories and 246 scales. It has the columns `instrument` (the inventory), `construct` (the scale to which the item is assigned), `item` (the item text), `key` (the scoring direction), and `alpha` (the scale's reliability). Note that some items are assigned to more than one scale.
+
+Repeat the analysis using another inventory of your choice: load the data with `read.csv('ipip_items.csv')` and select an inventory with, e.g., `subset(ipip, instrument == 'HEXACO_PI')`. You can even analyze the entire item pool at once — be warned, however, that with 246 constructs the visualizations (the PaCMAP plot and especially the confusion matrix) will become crowded and hard to read.
+
+Since observed correlations between items are not available here, the comparison with observed similarities can be skipped.
