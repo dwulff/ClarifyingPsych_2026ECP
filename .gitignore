@@ -1,0 +1,16 @@
+# Keynote source (too large for the repo; PDF version is pushed instead)
+*.key
+
+# Python
+venv/
+__pycache__/
+.ipynb_checkpoints/
+.jupyter/
+
+# R
+.Rproj.user/
+.Rhistory
+exercise.html
+
+# macOS
+.DS_Store

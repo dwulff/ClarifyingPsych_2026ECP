@@ -19,7 +19,7 @@ By the end of this analysis, you will have learned how:
 
 ## Environment Setup
 
-This notebook is meant to be run **locally** (see the [README](https://github.com/dwulff/ClarifyingPsych_2026SICSS) for setup instructions). Make sure the file is opened from within the workshop folder (so that the data files are found; in RStudio, the working directory is set to the file's folder automatically). The language model libraries `sentence-transformers` and `pacmap` have no native R implementation, so we access them from R via `reticulate`. If you have not installed them yet, uncomment and run the `py_install` line below (one-time setup).
+This notebook is meant to be run **locally** (see the [README](https://github.com/dwulff/ClarifyingPsych_2026ECP) for setup instructions). Make sure the file is opened from within the workshop folder (so that the data files are found; in RStudio, the working directory is set to the file's folder automatically). The language model libraries `sentence-transformers` and `pacmap` have no native R implementation, so we access them from R via `reticulate`. If you have not installed them yet, uncomment and run the `py_install` line below (one-time setup).
 
 ```{r}
 Sys.setenv(NUMBA_THREADING_LAYER = "workqueue")  # Avoids a threading conflict between R and pacmap

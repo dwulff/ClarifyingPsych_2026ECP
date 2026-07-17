@@ -1,12 +1,19 @@
 ## Clarifying psychology with large language models
 
-Workshop at the [Summer Institute in Computational Social Science (SICSS) Istanbul 2026](https://sicss.io/)
+Workshop at ECP 2026
 
 By [Dirk Wulff](https://www.mpib-berlin.mpg.de/person/93374/2549)
 
 Psychology suffers from a proliferation of constructs and measures: different scales carry the same label while measuring different things (jangle fallacies), and scales with different labels measure the same thing (jingle fallacies). This workshop shows how large language models (LLMs) can help clarify the structure of psychological constructs and measures by placing items and constructs in a shared semantic space — an approach developed in [Wulff & Mata (2025, *Nature Human Behaviour*)](https://doi.org/10.1038/s41562-024-02089-y).
 
-The workshop consists of a talk followed by a hands-on exercise, in which you will use a language model to extract features (embeddings) from personality items, evaluate how well the resulting item similarities predict empirically observed item correlations, visualize the structure of the item pool, and re-assign items to personality constructs.
+The workshop consists of an introductory talk, a self-guided hands-on exercise, a joint walkthrough of the exercise, and an outlook. In the exercise, you will use a language model to extract features (embeddings) from personality items, evaluate how well the resulting item similarities predict empirically observed item correlations, visualize the structure of the item pool, and re-assign items to personality constructs.
+
+### Schedule
+
+09:00 - 09:45: Introduction & Q&A<br>
+09:45 - 10:45: Self-guided exercise ([exercise.ipynb](exercise.ipynb) / [exercise.Rmd](exercise.Rmd))<br>
+10:45 - 11:15: Walkthrough<br>
+11:15 - 12:00: Outlook & Q&A
 
 ### Materials
 
@@ -15,14 +22,16 @@ The workshop consists of a talk followed by a hands-on exercise, in which you wi
 - [`items.csv`](items.csv) — 300 personality items (`factor`, `construct`, `item`) from the International Personality Item Pool (IPIP)
 - [`item_corrs.csv`](item_corrs.csv) — observed correlations between all item pairs, based on participant responses
 - [`ipip_items.csv`](ipip_items.csv) — the full IPIP: 3,805 item–scale assignments from 36 personality inventories, for the final exercise task
-- [`ClarifyingPsych_2026SICSS.pdf`](ClarifyingPsych_2026SICSS.pdf) — the presentation slides
+- [`ClarifyingPsych_2026ECP.pdf`](ClarifyingPsych_2026ECP.pdf) — the presentation slides
 
 ### Setup
+
+Please complete the setup **before the workshop** so that we can start the exercise right away.
 
 First, clone this repository (or download it as a ZIP via the green `<> Code` button and unpack it):
 
 ```
-git clone https://github.com/dwulff/ClarifyingPsych_2026SICSS.git
+git clone https://github.com/dwulff/ClarifyingPsych_2026ECP.git
 ```
 
 #### Python
@@ -30,7 +39,7 @@ git clone https://github.com/dwulff/ClarifyingPsych_2026SICSS.git
 1. Make sure you have Python 3.10–3.13 installed (3.14 is not yet supported by one of the dependencies).
 2. Install the required packages (ideally in a fresh virtual environment):
 ```
-cd ClarifyingPsych_2026SICSS
+cd ClarifyingPsych_2026ECP
 python -m venv venv
 source venv/bin/activate      # on Windows: venv\Scripts\activate
 pip install -r requirements.txt
