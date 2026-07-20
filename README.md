@@ -11,7 +11,7 @@ The workshop consists of an introductory talk, a self-guided hands-on exercise, 
 ### Schedule
 
 09:00 - 09:45: Introduction & Q&A<br>
-09:45 - 10:45: Self-guided exercise ([exercise.ipynb](exercise.ipynb) / [exercise.Rmd](exercise.Rmd))<br>
+09:45 - 10:45: Self-guided exercise, incl. setup ([exercise.ipynb](exercise.ipynb) / [exercise.Rmd](exercise.Rmd))<br>
 10:45 - 11:15: Walkthrough<br>
 11:15 - 12:00: Outlook & Q&A
 
@@ -26,28 +26,19 @@ The workshop consists of an introductory talk, a self-guided hands-on exercise, 
 
 ### Setup
 
-You can work through the exercise in one of three ways: **R (local)**, **Python (local)**, or **Python in the cloud (Google Colab)**. The exercise is identical in all three. Please complete the setup **before the workshop** so that we can start the exercise right away. If the local setups give you trouble, Colab is the no-installation fallback — all it needs is a Google account and a browser.
+You can work through the exercise in one of three ways: **Python in the cloud (Google Colab)**, **Python (local)**, or **R (local)**. The exercise is identical in all three. No setup ahead of the workshop is required: the recommended way is Google Colab, which runs in the browser, needs no installation, and only requires a Google account. Choose one of the local options if you already have a working Python or R environment on your laptop, or to reproduce the analysis on your own machine after the workshop.
+
+#### Option 1: Python in the cloud (Google Colab) — recommended
+
+1. If you do not have a Google account, you will need to create one (it can be deleted after the workshop).
+2. Open the notebook in Colab: [exercise.ipynb in Colab](https://colab.research.google.com/github/dwulff/ClarifyingPsych_2026ECP/blob/main/exercise.ipynb)
+3. Run the first code cell: it installs the required packages and clones this repository so that the data files are available. That's it.
 
 For the two local options, first clone this repository (or download it as a ZIP via the green `<> Code` button and unpack it):
 
 ```
 git clone https://github.com/dwulff/ClarifyingPsych_2026ECP.git
 ```
-
-#### Option 1: R (local)
-
-The R version accesses the Python libraries `sentence-transformers` and `pacmap` from R via `reticulate` (there is no native R implementation of these libraries).
-
-1. Make sure you have [R](https://cran.r-project.org/) (and ideally [RStudio](https://posit.co/download/rstudio-desktop/)) installed.
-2. Install the required R packages:
-```r
-install.packages(c("reticulate", "ggplot2"))
-```
-3. Install the required Python packages into reticulate's environment (one-time setup; this will also install Python itself if none is found):
-```r
-reticulate::py_install(c("sentence-transformers", "pacmap"))
-```
-4. Open `exercise.Rmd` in RStudio and run the chunks.
 
 #### Option 2: Python (local)
 
@@ -61,11 +52,20 @@ pip install -r requirements.txt
 ```
 3. Open `exercise.ipynb` in Jupyter (`jupyter lab exercise.ipynb`) or in an IDE such as VS Code, making sure the notebook runs from within the repository folder (so that the data files are found).
 
-#### Option 3: Python in the cloud (Google Colab)
+#### Option 3: R (local)
 
-1. If you do not have a Google account, you will need to create one (it can be deleted after the workshop).
-2. Open the notebook in Colab: [exercise.ipynb in Colab](https://colab.research.google.com/github/dwulff/ClarifyingPsych_2026ECP/blob/main/exercise.ipynb)
-3. Run the first code cell: it installs the required packages and clones this repository so that the data files are available. That's it.
+The R version accesses the Python libraries `sentence-transformers` and `pacmap` from R via `reticulate` (there is no native R implementation of these libraries).
+
+1. Make sure you have [R](https://cran.r-project.org/) (and ideally [RStudio](https://posit.co/download/rstudio-desktop/)) installed.
+2. Install the required R packages:
+```r
+install.packages(c("reticulate", "ggplot2"))
+```
+3. Install the required Python packages into reticulate's environment (one-time setup; this will also install Python itself if none is found):
+```r
+reticulate::py_install(c("sentence-transformers", "pacmap"))
+```
+4. Open `exercise.Rmd` in RStudio and run the chunks.
 
 Note: No Hugging Face account or access token is needed — all models used in the exercise are openly available.
 
