@@ -34,7 +34,7 @@ You can work through the exercise in one of three ways: **Python in the cloud (G
 2. Open the notebook in Colab: [exercise.ipynb in Colab](https://colab.research.google.com/github/dwulff/ClarifyingPsych_2026ECP/blob/main/exercise.ipynb)
 3. Run the first code cell: it installs the required packages and clones this repository so that the data files are available. That's it.
 
-Note: When connecting Colab to your Google account, you need to grant all the permissions it requests — otherwise the notebook cannot run. This includes clicking "Run anyway" if Colab warns that the notebook was not authored by Google. The permissions can be revoked after the workshop in your [Google account settings](https://myaccount.google.com/connections).
+Note: When you run the first cell, Colab may warn that the notebook was not authored by Google — click "Run anyway". The notebook does not access your Google Drive, so no further permissions are required.
 
 For the two local options, first clone this repository (or download it as a ZIP via the green `<> Code` button and unpack it):
 
