@@ -17,7 +17,7 @@ The workshop consists of an introductory talk, a self-guided hands-on exercise, 
 
 ### Materials
 
-- [`exercise.ipynb`](exercise.ipynb) — the exercise as a Python (Jupyter) notebook
+- [`exercise.ipynb`](exercise.ipynb) — the exercise as a Python (Jupyter) notebook (runs locally or in Google Colab)
 - [`exercise.Rmd`](exercise.Rmd) — the exercise as an R Markdown notebook (an automatically generated analog of the Python version)
 - [`items.csv`](items.csv) — 300 personality items (`factor`, `construct`, `item`) from the International Personality Item Pool (IPIP)
 - [`item_corrs.csv`](item_corrs.csv) — observed correlations between all item pairs, based on participant responses
@@ -26,27 +26,15 @@ The workshop consists of an introductory talk, a self-guided hands-on exercise, 
 
 ### Setup
 
-Please complete the setup **before the workshop** so that we can start the exercise right away.
+You can work through the exercise in one of three ways: **R (local)**, **Python (local)**, or **Python in the cloud (Google Colab)**. The exercise is identical in all three. Please complete the setup **before the workshop** so that we can start the exercise right away. If the local setups give you trouble, Colab is the no-installation fallback — all it needs is a Google account and a browser.
 
-First, clone this repository (or download it as a ZIP via the green `<> Code` button and unpack it):
+For the two local options, first clone this repository (or download it as a ZIP via the green `<> Code` button and unpack it):
 
 ```
 git clone https://github.com/dwulff/ClarifyingPsych_2026ECP.git
 ```
 
-#### Python
-
-1. Make sure you have Python 3.10–3.13 installed (3.14 is not yet supported by one of the dependencies).
-2. Install the required packages (ideally in a fresh virtual environment):
-```
-cd ClarifyingPsych_2026ECP
-python -m venv venv
-source venv/bin/activate      # on Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-3. Open `exercise.ipynb` in Jupyter (`jupyter lab exercise.ipynb`) or in an IDE such as VS Code, making sure the notebook runs from within the repository folder (so that the data files are found).
-
-#### R
+#### Option 1: R (local)
 
 The R version accesses the Python libraries `sentence-transformers` and `pacmap` from R via `reticulate` (there is no native R implementation of these libraries).
 
@@ -60,6 +48,24 @@ install.packages(c("reticulate", "ggplot2"))
 reticulate::py_install(c("sentence-transformers", "pacmap"))
 ```
 4. Open `exercise.Rmd` in RStudio and run the chunks.
+
+#### Option 2: Python (local)
+
+1. Make sure you have Python 3.10–3.13 installed (3.14 is not yet supported by one of the dependencies).
+2. Install the required packages (ideally in a fresh virtual environment):
+```
+cd ClarifyingPsych_2026ECP
+python -m venv venv
+source venv/bin/activate      # on Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+3. Open `exercise.ipynb` in Jupyter (`jupyter lab exercise.ipynb`) or in an IDE such as VS Code, making sure the notebook runs from within the repository folder (so that the data files are found).
+
+#### Option 3: Python in the cloud (Google Colab)
+
+1. If you do not have a Google account, you will need to create one (it can be deleted after the workshop).
+2. Open the notebook in Colab: [exercise.ipynb in Colab](https://colab.research.google.com/github/dwulff/ClarifyingPsych_2026ECP/blob/main/exercise.ipynb)
+3. Run the first code cell: it installs the required packages and clones this repository so that the data files are available. That's it.
 
 Note: No Hugging Face account or access token is needed — all models used in the exercise are openly available.
 
